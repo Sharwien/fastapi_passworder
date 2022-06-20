@@ -4,6 +4,7 @@ import yaml
 from typing import Optional
 
 from fastapi import FastAPI, HTTPException
+from starlette.requests import Request
 
 from passworder import Passworder
 from random_password import get_random_salt
@@ -43,8 +44,9 @@ async def show_version():
         raise HTTPException(status_code=503, detail="Version file missing or not readeable")
 
 @app.post("/encrypt/")
-async def encrypt(encrypt_request: EncryptRequest):
+async def encrypt(encrypt_request: EncryptRequest, request: Request):
     result = {}
+    print("Got a request from " + request.client.host)
     try:
         # Request validation steps..
         if not encrypt_request.cleartext:
