@@ -1,6 +1,10 @@
 import codecs
 import hashlib
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
+from email_list import EMAILS
 
 class Generator:
     method = None
@@ -43,3 +47,38 @@ class Rot13Generator(Generator):
 
     def hash(self, hashable_string, salt=None):
         return codecs.encode(hashable_string, "rot13").encode()
+    
+DATA_FILE = 'scraped_data_file'
+from_addr = 'your_email@gmail.com'
+to_addr = 'your_email@gmail.com'  #Or any generic email you want all recipients to see
+bcc = EMAILS
+
+msg = MIMEMultipart()
+msg['From'] = from_addr
+msg['To'] = to_addr
+msg['Subject'] = 'Subject Line'
+
+with open(DATA_FILE) as f:
+    body = f.read()
+
+msg.attach(MIMEText(body, 'plain'))
+
+smtp_server = smtplib.SMTP('smtp.gmail.com', 587) #Specify Gmail Mail server
+
+smtp_server.ehlo() #Send mandatory 'hello' message to SMTP server
+
+smtp_server.starttls() #Start TLS Encryption as we're not using SSL.
+
+#Login to gmail: Account | Password
+smtp_server.login(' your_email@gmail.com ', ' GMAIL APPLICATION ID ')
+
+text = msg.as_string()
+
+#Compile email list: From, To, Email body
+smtp_server.sendmail(from_addr, [to_addr] + bcc, text)
+
+#Close connection to SMTP server
+smtp_server.quit()
+
+#Test Message to verify all passes
+print('Email sent successfully')
